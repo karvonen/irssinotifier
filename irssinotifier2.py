@@ -54,7 +54,7 @@ from subprocess import Popen, PIPE
 
 weechat.register("irssinotifier",
                  "Caspar Clemens Mierau <ccm@screenage.de>",
-                 "0.7",
+                 "0.7.1",
                  "GPL3",
                  "irssinotifier: Send push notifications to Android's IrssiNotifier about your private message and highligts.",
                  "",
@@ -67,6 +67,7 @@ settings = {
     "ignore_buffers": "Comma separated list of buffers to ignore.",
     "ignore_servers": "Comma separated list of servers to ignore.",
     "ignore_nicks": "Comma separated list of nicks to ignore.",
+    "only_detached": "Only send notifications when detached from screen.",
 }
 
 required_settings = ["api_token", "encryption_password"]
@@ -101,7 +102,7 @@ def notify_show(data, bufferp, uber_empty, tagsn, isdisplayed,
 
     # screen attached?
     attached = os.access(SOCK, os.X_OK)
-    if (attached):
+    if (attached and weechat.config_get_plugin("only_detached") == "on"):
         return weechat.WEECHAT_RC_OK
 
     # are we away?
