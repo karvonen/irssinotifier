@@ -49,7 +49,7 @@
 # 2012-10-26, ccm <ccm@screenage.de>:
 #     version 0.1: - initial release - working proof of concept
 
-import weechat, string, os, urllib, urllib2, shlex
+import weechat, string, os, urllib, urllib2, shlex, re
 from subprocess import Popen, PIPE
 
 weechat.register("irssinotifier",
@@ -85,6 +85,11 @@ for option, help_text in settings.items():
 weechat.hook_print("", "notify_message", "", 1, "notify_show", "")
 weechat.hook_print("", "notify_private", "", 1, "notify_show", "")
 
+cmd_output = os.popen('env LC_ALL=C screen -ls').read()
+match = re.search(r'Sockets? in (/.+)\.', cmd_output)
+SOCK = os.path.join(match.group(1), os.environ['STY'])
+
+
 # Functions
 def notify_show(data, bufferp, uber_empty, tagsn, isdisplayed,
         ishilight, prefix, message):
@@ -92,6 +97,11 @@ def notify_show(data, bufferp, uber_empty, tagsn, isdisplayed,
     # irc PMs are caught by notify_private, but we need notify_message to
     # capture hilights in channels.
     if 'notify_message' in tagsn and not ishilight:
+        return weechat.WEECHAT_RC_OK
+
+    # screen attached?
+    attached = os.access(SOCK, os.X_OK)
+    if (attached):
         return weechat.WEECHAT_RC_OK
 
     # are we away?
